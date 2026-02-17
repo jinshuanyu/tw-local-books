@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>台灣本土兒童好書推薦</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Iansui&family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --mint:#b8e6c8;--mint-light:#e8f5e9;
+  --blue:#b3d4fc;--blue-light:#e3f0ff;
+  --purple:#d1c4e9;--purple-light:#ede7f6;
+  --yellow:#fff3c4;--yellow-light:#fffde7;
+  --pink:#f8bbd0;--pink-light:#fce4ec;
+  --orange:#ffe0b2;--orange-light:#fff3e0;
+  --text:#2e3a2e;--text-light:#5f6b5f;
+  --bg:#fafff8;--card-bg:#fff;
+  --shadow:0 2px 12px rgba(60,80,60,.08);
+  --radius:14px;
+}
+html{font-size:16px;scroll-behavior:smooth}
+body{
+  font-family:'Iansui','Noto Sans TC',sans-serif;
+  background:var(--bg);color:var(--text);
+  line-height:1.6;min-height:100vh;
+}
+
+/* Header */
+.header{
+  text-align:center;padding:2.5rem 1rem 1.5rem;
+  background:linear-gradient(135deg,var(--mint-light),var(--blue-light),var(--purple-light));
+}
+.header h1{
+  font-size:clamp(1.6rem,4vw,2.4rem);font-weight:700;
+  margin-bottom:.3rem;letter-spacing:.02em;
+}
+.header p{font-size:clamp(.85rem,2vw,1rem);color:var(--text-light)}
+
+/* Container */
+.container{max-width:1200px;margin:0 auto;padding:0 1rem 3rem}
+
+/* Filter bar */
+.filter-bar{
+  position:sticky;top:0;z-index:10;
+  background:rgba(250,255,248,.92);backdrop-filter:blur(8px);
+  padding:1rem 0 .8rem;margin-bottom:1rem;
+  border-bottom:1px solid rgba(0,0,0,.05);
+}
+.age-tabs{
+  display:flex;flex-wrap:wrap;gap:.5rem;
+  justify-content:center;margin-bottom:.8rem;
+}
+.age-tab{
+  padding:.4rem 1rem;border-radius:999px;border:2px solid transparent;
+  background:var(--card-bg);cursor:pointer;
+  font-size:clamp(.8rem,1.8vw,.9rem);font-weight:500;
+  transition:all .2s;box-shadow:0 1px 4px rgba(0,0,0,.06);
+  font-family:inherit;color:var(--text);
+}
+.age-tab:hover{transform:scale(1.05)}
+.age-tab.active{border-color:var(--text);background:var(--mint);font-weight:600}
+.age-tab[data-age="幼兒0-6歲"].active{background:var(--pink)}
+.age-tab[data-age="國小低年級"].active{background:var(--yellow)}
+.age-tab[data-age="國小中年級"].active{background:var(--mint)}
+.age-tab[data-age="國小高年級"].active{background:var(--blue)}
+.age-tab[data-age="國中"].active{background:var(--purple)}
+.age-tab[data-age="高中"].active{background:var(--orange)}
+
+.search-row{display:flex;gap:.5rem;max-width:480px;margin:0 auto;align-items:center}
+.search-input{
+  flex:1;padding:.55rem 1rem;border-radius:999px;
+  border:2px solid #dde8dd;background:var(--card-bg);
+  font-size:.9rem;font-family:inherit;outline:none;
+  transition:border-color .2s;
+}
+.search-input:focus{border-color:var(--mint)}
+.search-input::placeholder{color:#aaa}
+.clear-btn{
+  background:none;border:none;font-size:1.2rem;cursor:pointer;
+  color:#999;padding:.2rem .5rem;display:none;
+}
+.clear-btn.show{display:block}
+
+/* Source filter */
+.source-filters{
+  display:flex;flex-wrap:wrap;gap:.4rem;
+  justify-content:center;margin-top:.6rem;
+}
+.source-chip{
+  padding:.2rem .65rem;border-radius:999px;
+  font-size:.72rem;cursor:pointer;border:1.5px solid #ddd;
+  background:var(--card-bg);transition:all .2s;font-family:inherit;
+  color:var(--text-light);
+}
+.source-chip:hover{transform:scale(1.04)}
+.source-chip.active{border-color:#888;background:var(--yellow-light);color:var(--text);font-weight:500}
+
+/* Info bar */
+.info-bar{
+  text-align:center;padding:.5rem 0;
+  font-size:.85rem;color:var(--text-light);
+}
+
+/* Book grid */
+.book-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(280px,1fr));
+  gap:1rem;
+}
+.book-card{
+  background:var(--card-bg);border-radius:var(--radius);
+  padding:1.2rem;box-shadow:var(--shadow);
+  display:flex;flex-direction:column;gap:.5rem;
+  transition:transform .2s,box-shadow .2s;
+  border:1px solid rgba(0,0,0,.04);
+}
+.book-card:hover{transform:translateY(-2px);box-shadow:0 4px 20px rgba(60,80,60,.12)}
+.book-title{font-size:1.05rem;font-weight:600;line-height:1.4}
+.book-meta{font-size:.82rem;color:var(--text-light);line-height:1.5}
+.book-meta span+span::before{content:" · "}
+
+/* Tags */
+.book-tags{display:flex;flex-wrap:wrap;gap:.3rem;margin-top:auto;padding-top:.4rem}
+.tag{
+  padding:.15rem .5rem;border-radius:999px;font-size:.7rem;font-weight:500;
+  white-space:nowrap;
+}
+.tag-age{background:var(--mint-light);color:#2e7d32}
+.tag-source{background:var(--blue-light);color:#1565c0}
+.tag-year{background:var(--yellow-light);color:#f57f17}
+
+/* Buttons */
+.book-actions{display:flex;gap:.5rem;margin-top:.4rem}
+.btn{
+  flex:1;padding:.4rem .6rem;border-radius:999px;border:none;
+  font-size:.8rem;font-weight:500;cursor:pointer;
+  text-decoration:none;text-align:center;
+  transition:all .2s;font-family:inherit;display:inline-block;
+}
+.btn:hover{transform:scale(1.04)}
+.btn-buy{background:#ff8a65;color:#fff}
+.btn-buy:hover{background:#ff7043}
+.btn-borrow{background:var(--blue);color:#1a3a5c}
+.btn-borrow:hover{background:#90c2fc}
+
+/* Load more */
+.load-more-wrap{text-align:center;padding:1.5rem 0}
+.btn-load{
+  padding:.6rem 2rem;border-radius:999px;
+  background:var(--mint);border:2px solid transparent;
+  font-size:.95rem;font-weight:500;cursor:pointer;
+  transition:all .2s;font-family:inherit;
+}
+.btn-load:hover{transform:scale(1.05);background:var(--blue)}
+
+/* Loading & empty */
+.loading,.empty-state{
+  text-align:center;padding:3rem 1rem;color:var(--text-light);
+  font-size:1.1rem;
+}
+.loading::after{content:"";display:inline-block;width:1.2rem;height:1.2rem;
+  border:2px solid #ccc;border-top-color:var(--mint);border-radius:50%;
+  animation:spin .6s linear infinite;margin-left:.5rem;vertical-align:middle}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* Footer */
+.footer{
+  text-align:center;padding:2rem 1rem;
+  font-size:.85rem;color:#999;
+}
+.footer-cta{
+  display:inline-block;
+  background:linear-gradient(135deg,#fbbf24,#f97316);
+  color:#fff;font-weight:500;font-size:.95rem;
+  padding:.6rem 1.4rem;border-radius:999px;
+  text-decoration:none;line-height:1.5;
+  box-shadow:0 2px 8px rgba(249,115,22,.25);
+  transition:transform .2s;
+}
+.footer-cta:hover{transform:scale(1.05)}
+.footer-icons{
+  display:flex;justify-content:center;align-items:center;
+  gap:1.2rem;padding:.8rem 0;font-size:1.3rem;
+}
+.footer-icons a{color:#888;text-decoration:none;transition:color .2s}
+.footer-icons a:hover{color:var(--text)}
+.footer p{color:#aaa}
+.footer p a{color:#5b9bd5;text-decoration:underline}
+.footer p a:hover{color:#3a7cc0}
+
+/* Responsive */
+@media(max-width:600px){
+  .book-grid{grid-template-columns:1fr}
+  .header{padding:1.8rem 1rem 1rem}
+  .age-tabs{gap:.35rem}
+  .age-tab{padding:.35rem .7rem;font-size:.78rem}
+}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>台灣本土兒童好書推薦</h1>
+  <p>收錄多項書單來源，精選台灣本土創作兒童讀物</p>
+</div>
+
+<div class="container">
+  <div class="filter-bar">
+    <div class="age-tabs" id="ageTabs">
+      <button class="age-tab active" data-age="">全部</button>
+      <button class="age-tab" data-age="幼兒0-6歲">幼兒</button>
+      <button class="age-tab" data-age="國小低年級">低年級</button>
+      <button class="age-tab" data-age="國小中年級">中年級</button>
+      <button class="age-tab" data-age="國小高年級">高年級</button>
+      <button class="age-tab" data-age="國中">國中</button>
+      <button class="age-tab" data-age="高中">高中</button>
+    </div>
+    <div class="search-row">
+      <input type="text" class="search-input" id="searchInput" placeholder="搜尋書名或作者...">
+      <button class="clear-btn" id="clearBtn">&times;</button>
+    </div>
+    <div class="source-filters" id="sourceFilters"></div>
+  </div>
+
+  <div class="info-bar" id="infoBar"></div>
+  <div class="book-grid" id="bookGrid"></div>
+  <div class="load-more-wrap" id="loadMoreWrap" style="display:none">
+    <button class="btn-load" id="loadMoreBtn">顯示更多</button>
+  </div>
+  <div class="loading" id="loading">載入書單中</div>
+  <div class="empty-state" id="emptyState" style="display:none">找不到符合條件的書籍</div>
+</div>
+
+<footer class="footer">
+  <p><strong>資料來源：</strong><a href="https://book.moc.gov.tw/" target="_blank" rel="noopener noreferrer">中小學生讀物選介</a>、<a href="https://tpml.gov.taipei/News_Content.aspx?n=E5E37C9048A83EB3&sms=7D4B7120B494353E&s=C15B641097D9FEB8" target="_blank" rel="noopener noreferrer">好書大家讀</a>、<a href="https://www.pccr.tw/%E8%A9%95%E9%81%B8%E4%BD%9C%E6%A5%AD%E4%BB%8B%E7%B4%B9/" target="_blank" rel="noopener noreferrer">嬰幼兒閱讀</a>、<a href="https://read.tn.edu.tw/" target="_blank" rel="noopener noreferrer">布可星球</a>、<a href="https://ireading.kh.edu.tw/" target="_blank" rel="noopener noreferrer">喜閱網</a>、<a href="https://www.tnpl.tn.edu.tw/u5757330425670374244/a1" target="_blank" rel="noopener noreferrer">臺南市圖</a>、<a href="https://www.openbook.org.tw/annual" target="_blank" rel="noopener noreferrer">Openbook好書獎</a>、<a href="https://children.moc.gov.tw/" target="_blank" rel="noopener noreferrer">文化部兒童文化館</a> 等</p>
+  <div style="margin-top:.8rem">
+    <a class="footer-cta" href="https://portaly.cc/mamahowma/support" target="_blank" rel="noopener noreferrer">
+      喜歡這個免費工具嗎？<br>☕ 請杯咖啡鼓勵我
+    </a>
+  </div>
+  <div class="footer-icons">
+    <a href="mailto:mamahowma@gmail.com" aria-label="Email mamahowma"><i class="fa-solid fa-envelope" aria-hidden="true"></i></a>
+    <a href="https://www.facebook.com/mamahowma" target="_blank" rel="noopener noreferrer" aria-label="mamahowma Facebook Page"><i class="fa-brands fa-facebook" aria-hidden="true"></i></a>
+    <a href="https://portaly.cc/mamahowma/support" target="_blank" rel="noopener noreferrer" aria-label="Support mamahowma"><i class="fa-solid fa-mug-hot" aria-hidden="true"></i></a>
+  </div>
+  <p>&copy; 2026 Christina Yu. All Rights Reserved.</p>
+</footer>
+
+<script>
+const PAGE_SIZE = 60;
+const AFFILIATE = 'mamahowread';
+
+let allBooks = [];
+let filtered = [];
+let page = 0;
+let activeAge = '';
+let activeSource = '';
+let searchTerm = '';
+let allSources = [];
+
+const grid = document.getElementById('bookGrid');
+const infoBar = document.getElementById('infoBar');
+const loadMoreWrap = document.getElementById('loadMoreWrap');
+const loadMoreBtn = document.getElementById('loadMoreBtn');
+const loading = document.getElementById('loading');
+const emptyState = document.getElementById('emptyState');
+const searchInput = document.getElementById('searchInput');
+const clearBtn = document.getElementById('clearBtn');
+
+// Buy URL
+function buyUrl(book) {
+  const key = book.isbn || book.title;
+  const now = new Date();
+  const ym = String(now.getFullYear()) + String(now.getMonth() + 1).padStart(2, '0');
+  return `https://search.books.com.tw/search/query/key/${encodeURIComponent(key)}/cat/all?utm_source=${AFFILIATE}&utm_medium=ap-books&utm_content=recommend&utm_campaign=ap-${ym}`;
+}
+
+// Borrow URL (NBINet 全國圖書書目資訊網，含公共圖書館)
+function borrowUrl(book) {
+  if (book.isbn) {
+    return `https://nbinet3.ncl.edu.tw/search*cht/?searchtype=i&searcharg=${encodeURIComponent(book.isbn)}`;
+  }
+  return `https://nbinet3.ncl.edu.tw/search*cht/?searchtype=t&searcharg=${encodeURIComponent(book.title)}`;
+}
+
+// Render one card
+function renderCard(book) {
+  const card = document.createElement('div');
+  card.className = 'book-card';
+
+  const meta = [book.author, book.publisher].filter(Boolean).join(' / ');
+  const srcTags = (book.sources || []).map(s =>
+    `<span class="tag tag-source">${s}</span>`
+  ).join('');
+
+  card.innerHTML = `
+    <div class="book-title">${esc(book.title)}</div>
+    <div class="book-meta"><span>${esc(meta)}</span>${book.year ? `<span>${book.year}</span>` : ''}</div>
+    <div class="book-tags">
+      ${book.age_group ? `<span class="tag tag-age">${book.age_group}</span>` : ''}
+      ${srcTags}
+    </div>
+    <div class="book-actions">
+      <a class="btn btn-buy" href="${buyUrl(book)}" target="_blank" rel="noopener">購買</a>
+      <a class="btn btn-borrow" href="${borrowUrl(book)}" target="_blank" rel="noopener">借閱</a>
+    </div>
+  `;
+  return card;
+}
+
+function esc(s) {
+  if (!s) return '';
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+// Apply filters
+function applyFilters() {
+  const q = searchTerm.toLowerCase();
+  // First filter by age + search (without source) for source counts
+  const baseFiltered = allBooks.filter(b => {
+    if (activeAge && b.age_group !== activeAge) return false;
+    if (q) {
+      const hay = (b.title + ' ' + (b.author || '') + ' ' + (b.publisher || '')).toLowerCase();
+      if (!hay.includes(q)) return false;
+    }
+    return true;
+  });
+  updateSourceCounts(baseFiltered);
+  // Then apply source filter
+  filtered = activeSource ? baseFiltered.filter(b => (b.sources || []).includes(activeSource)) : baseFiltered;
+  page = 0;
+  render();
+}
+
+// Render
+function render() {
+  grid.innerHTML = '';
+  const end = Math.min((page + 1) * PAGE_SIZE, filtered.length);
+  for (let i = 0; i < end; i++) {
+    grid.appendChild(renderCard(filtered[i]));
+  }
+  infoBar.textContent = `共 ${filtered.length} 本書`;
+  loadMoreWrap.style.display = end < filtered.length ? '' : 'none';
+  emptyState.style.display = filtered.length === 0 ? '' : 'none';
+}
+
+// Load more
+loadMoreBtn.addEventListener('click', () => {
+  page++;
+  const start = page * PAGE_SIZE;
+  const end = Math.min(start + PAGE_SIZE, filtered.length);
+  for (let i = start; i < end; i++) {
+    grid.appendChild(renderCard(filtered[i]));
+  }
+  loadMoreWrap.style.display = end < filtered.length ? '' : 'none';
+});
+
+// Age tabs
+document.getElementById('ageTabs').addEventListener('click', e => {
+  const tab = e.target.closest('.age-tab');
+  if (!tab) return;
+  document.querySelectorAll('.age-tab').forEach(t => t.classList.remove('active'));
+  tab.classList.add('active');
+  activeAge = tab.dataset.age;
+  applyFilters();
+});
+
+// Source filters - build once
+function buildSourceFilters() {
+  const counts = {};
+  allBooks.forEach(b => (b.sources || []).forEach(s => counts[s] = (counts[s] || 0) + 1));
+  allSources = Object.entries(counts).sort((a, b) => b[1] - a[1]);
+  const wrap = document.getElementById('sourceFilters');
+  wrap.innerHTML = '';
+  allSources.forEach(([name]) => {
+    const chip = document.createElement('button');
+    chip.className = 'source-chip';
+    chip.dataset.source = name;
+    chip.addEventListener('click', () => {
+      if (activeSource === name) {
+        activeSource = '';
+        chip.classList.remove('active');
+      } else {
+        document.querySelectorAll('.source-chip').forEach(c => c.classList.remove('active'));
+        activeSource = name;
+        chip.classList.add('active');
+      }
+      applyFilters();
+    });
+    wrap.appendChild(chip);
+  });
+}
+
+// Update source chip counts based on filtered data
+function updateSourceCounts(baseFiltered) {
+  const counts = {};
+  baseFiltered.forEach(b => (b.sources || []).forEach(s => counts[s] = (counts[s] || 0) + 1));
+  document.querySelectorAll('.source-chip').forEach(chip => {
+    const name = chip.dataset.source;
+    const count = counts[name] || 0;
+    chip.textContent = `${name} (${count})`;
+    chip.style.display = count > 0 ? '' : 'none';
+  });
+}
+
+// Search
+let debounceTimer;
+searchInput.addEventListener('input', () => {
+  clearBtn.classList.toggle('show', searchInput.value.length > 0);
+  clearTimeout(debounceTimer);
+  debounceTimer = setTimeout(() => {
+    searchTerm = searchInput.value.trim();
+    applyFilters();
+  }, 250);
+});
+clearBtn.addEventListener('click', () => {
+  searchInput.value = '';
+  searchTerm = '';
+  clearBtn.classList.remove('show');
+  applyFilters();
+});
+
+// Init
+fetch('books.json')
+  .then(r => r.json())
+  .then(data => {
+    allBooks = data;
+    loading.style.display = 'none';
+    buildSourceFilters();
+    applyFilters();
+  })
+  .catch(err => {
+    loading.textContent = '載入失敗，請確認 books.json 存在';
+    console.error(err);
+  });
+</script>
+</body>
+</html>
