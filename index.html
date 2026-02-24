@@ -1,219 +1,496 @@
 <!DOCTYPE html>
-<html lang="zh-Hant">
+<html lang="zh-TW">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>本土圖書推薦查詢</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <style>
-    @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600;700&display=swap');
-    body{font-family:'Noto Sans TC',sans-serif}
-    .filter-btn.active{background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);color:#fff;transform:translateY(-1px)}
-    @keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
-    .fade-in{animation:fadeIn .25s ease-out}
-    details>summary::-webkit-details-marker{display:none}
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>臺灣本土兒少好書推薦</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Iansui&family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --mint:#b8e6c8;--mint-light:#e8f5e9;
+  --blue:#b3d4fc;--blue-light:#e3f0ff;
+  --purple:#d1c4e9;--purple-light:#ede7f6;
+  --yellow:#fff3c4;--yellow-light:#fffde7;
+  --pink:#f8bbd0;--pink-light:#fce4ec;
+  --orange:#ffe0b2;--orange-light:#fff3e0;
+  --text:#2e3a2e;--text-light:#5f6b5f;
+  --bg:#fafff8;--card-bg:#fff;
+  --shadow:0 2px 12px rgba(60,80,60,.08);
+  --radius:14px;
+}
+html{font-size:16px;scroll-behavior:smooth}
+body{
+  font-family:'Iansui','Noto Sans TC',sans-serif;
+  background:var(--bg);color:var(--text);
+  line-height:1.6;min-height:100vh;
+}
+
+/* Header */
+.header{
+  text-align:center;padding:2.5rem 1rem 1.5rem;
+  background:linear-gradient(135deg,var(--mint-light),var(--blue-light),var(--purple-light));
+}
+.header h1{
+  font-size:clamp(1.6rem,4vw,2.4rem);font-weight:700;
+  margin-bottom:.3rem;letter-spacing:.02em;
+}
+.header p{font-size:clamp(.85rem,2vw,1rem);color:var(--text-light)}
+
+/* Container */
+.container{max-width:1200px;margin:0 auto;padding:0 1rem 3rem}
+
+/* Filter bar */
+.filter-bar{
+  position:sticky;top:0;z-index:10;
+  background:rgba(250,255,248,.92);backdrop-filter:blur(8px);
+  padding:1rem 0 .8rem;margin-bottom:1rem;
+  border-bottom:1px solid rgba(0,0,0,.05);
+}
+.age-tabs{
+  display:flex;flex-wrap:wrap;gap:.5rem;
+  justify-content:center;margin-bottom:.8rem;
+}
+.age-tab{
+  padding:.4rem 1rem;border-radius:999px;border:2px solid transparent;
+  background:var(--card-bg);cursor:pointer;
+  font-size:clamp(.8rem,1.8vw,.9rem);font-weight:500;
+  transition:all .2s;box-shadow:0 1px 4px rgba(0,0,0,.06);
+  font-family:inherit;color:var(--text);
+}
+.age-tab:hover{transform:scale(1.05)}
+.age-tab.active{border-color:var(--text);background:var(--mint);font-weight:600}
+.age-tab[data-age="幼兒0-6歲"].active{background:var(--pink)}
+.age-tab[data-age="國小低年級"].active{background:var(--yellow)}
+.age-tab[data-age="國小中年級"].active{background:var(--mint)}
+.age-tab[data-age="國小高年級"].active{background:var(--blue)}
+.age-tab[data-age="國中"].active{background:var(--purple)}
+.age-tab[data-age="高中"].active{background:var(--orange)}
+
+.search-row{display:flex;gap:.5rem;max-width:480px;margin:0 auto;align-items:center}
+.search-input{
+  flex:1;padding:.55rem 1rem;border-radius:999px;
+  border:2px solid #dde8dd;background:var(--card-bg);
+  font-size:.9rem;font-family:inherit;outline:none;
+  transition:border-color .2s;
+}
+.search-input:focus{border-color:var(--mint)}
+.search-input::placeholder{color:#aaa}
+.clear-btn{
+  background:none;border:none;font-size:1.2rem;cursor:pointer;
+  color:#999;padding:.2rem .5rem;display:none;
+}
+.clear-btn.show{display:block}
+
+/* Source filter */
+.source-filters{
+  display:flex;flex-wrap:wrap;gap:.4rem;
+  justify-content:center;margin-top:.6rem;
+}
+.source-chip{
+  padding:.2rem .65rem;border-radius:999px;
+  font-size:.72rem;cursor:pointer;border:1.5px solid #ddd;
+  background:var(--card-bg);transition:all .2s;font-family:inherit;
+  color:var(--text-light);
+}
+.source-chip:hover{transform:scale(1.04)}
+.source-chip.active{border-color:#888;background:var(--yellow-light);color:var(--text);font-weight:500}
+
+/* Info bar */
+.info-bar{
+  text-align:center;padding:.5rem 0;
+  font-size:.85rem;color:var(--text-light);
+}
+
+/* Book grid */
+.book-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(280px,1fr));
+  gap:1rem;
+}
+.book-card{
+  background:var(--card-bg);border-radius:var(--radius);
+  padding:1.2rem;box-shadow:var(--shadow);
+  display:flex;flex-direction:column;gap:.5rem;
+  transition:transform .2s,box-shadow .2s;
+  border:1px solid rgba(0,0,0,.04);
+}
+.book-card:hover{transform:translateY(-2px);box-shadow:0 4px 20px rgba(60,80,60,.12)}
+.book-title{font-size:1.05rem;font-weight:600;line-height:1.4}
+.book-meta{font-size:.82rem;color:var(--text-light);line-height:1.5}
+.book-meta span+span::before{content:" · "}
+
+/* Tags */
+.book-tags{display:flex;flex-wrap:wrap;gap:.3rem;margin-top:auto;padding-top:.4rem}
+.tag{
+  padding:.15rem .5rem;border-radius:999px;font-size:.7rem;font-weight:500;
+  white-space:nowrap;
+}
+.tag-age{background:var(--mint-light);color:#2e7d32}
+.tag-source{background:var(--blue-light);color:#1565c0}
+.tag-year{background:var(--yellow-light);color:#f57f17}
+
+/* Buttons */
+.book-actions{display:flex;gap:.5rem;margin-top:.4rem}
+.btn{
+  flex:1;padding:.4rem .6rem;border-radius:999px;border:none;
+  font-size:.8rem;font-weight:500;cursor:pointer;
+  text-decoration:none;text-align:center;
+  transition:all .2s;font-family:inherit;display:inline-block;
+}
+.btn:hover{transform:scale(1.04)}
+.btn-buy{background:#ff8a65;color:#fff}
+.btn-buy:hover{background:#ff7043}
+.btn-borrow{background:var(--blue);color:#1a3a5c}
+.btn-borrow:hover{background:#90c2fc}
+
+/* Load more */
+.load-more-wrap{text-align:center;padding:1.5rem 0}
+.btn-load{
+  padding:.6rem 2rem;border-radius:999px;
+  background:var(--mint);border:2px solid transparent;
+  font-size:.95rem;font-weight:500;cursor:pointer;
+  transition:all .2s;font-family:inherit;
+}
+.btn-load:hover{transform:scale(1.05);background:var(--blue)}
+
+/* Loading & empty */
+.loading,.empty-state{
+  text-align:center;padding:3rem 1rem;color:var(--text-light);
+  font-size:1.1rem;
+}
+.loading::after{content:"";display:inline-block;width:1.2rem;height:1.2rem;
+  border:2px solid #ccc;border-top-color:var(--mint);border-radius:50%;
+  animation:spin .6s linear infinite;margin-left:.5rem;vertical-align:middle}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* Footer */
+.footer{
+  text-align:center;padding:2rem 1rem;
+  font-size:.85rem;color:#999;
+}
+.footer-cta{
+  display:inline-block;
+  background:linear-gradient(135deg,#fbbf24,#f97316);
+  color:#fff;font-weight:500;font-size:.95rem;
+  padding:.6rem 1.4rem;border-radius:999px;
+  text-decoration:none;line-height:1.5;
+  box-shadow:0 2px 8px rgba(249,115,22,.25);
+  transition:transform .2s;
+}
+.footer-cta:hover{transform:scale(1.05)}
+.footer-icons{
+  display:flex;justify-content:center;align-items:center;
+  gap:1.2rem;padding:.8rem 0;font-size:1.3rem;
+}
+.footer-icons a{color:#888;text-decoration:none;transition:color .2s}
+.footer-icons a:hover{color:var(--text)}
+.footer p{color:#aaa}
+.footer p a{color:#5b9bd5;text-decoration:underline}
+.footer p a:hover{color:#3a7cc0}
+
+/* Back to top */
+.back-to-top{
+  position:fixed;bottom:1.5rem;right:1.5rem;
+  width:3rem;height:3rem;border-radius:50%;border:none;
+  background:linear-gradient(135deg,var(--mint),var(--blue));
+  color:var(--text);font-size:1.3rem;cursor:pointer;
+  box-shadow:0 2px 10px rgba(0,0,0,.15);
+  opacity:0;pointer-events:none;transition:all .3s;
+  display:flex;align-items:center;justify-content:center;z-index:50;
+}
+.back-to-top.show{opacity:1;pointer-events:auto}
+.back-to-top:hover{transform:scale(1.1)}
+
+/* Mobile filter toggle */
+.filter-toggle{
+  display:none;width:100%;padding:.5rem 1rem;
+  border-radius:999px;border:1.5px solid #dde8dd;
+  background:var(--card-bg);font-family:inherit;
+  font-size:.85rem;font-weight:500;color:var(--text);
+  cursor:pointer;margin-bottom:.5rem;
+  justify-content:space-between;align-items:center;
+}
+.filter-toggle .arrow{transition:transform .2s;font-size:.7rem}
+.filter-toggle .arrow.open{transform:rotate(180deg)}
+
+/* Responsive */
+@media(max-width:600px){
+  .book-grid{grid-template-columns:1fr}
+  .header{padding:1.8rem 1rem 1rem}
+  .age-tabs{gap:.35rem}
+  .age-tab{padding:.35rem .7rem;font-size:.78rem}
+  .tag{font-size:.8rem;padding:.2rem .6rem}
+  .source-chip{font-size:.78rem;padding:.3rem .7rem}
+  .filter-toggle{display:flex}
+  .filter-collapsible.collapsed{display:none}
+}
+</style>
 </head>
-<body class="bg-gradient-to-br from-rose-50 via-indigo-50 to-sky-50 min-h-screen">
-  <main class="container mx-auto p-4 sm:p-6 md:p-8 max-w-7xl">
-    <section class="bg-white/90 backdrop-blur-sm rounded-3xl shadow-2xl p-6 md:p-10 border border-white/30">
-      <header class="text-center mb-8">
-        <h1 class="text-3xl sm:text-5xl font-extrabold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">本土圖書推薦查詢</h1>
-        <p class="mt-2 text-gray-600">資料來源：<span class="font-medium text-blue-700">喜閱網</span>＋<span class="font-medium text-green-700">布可星球</span></p>
-      </header>
+<body>
 
-      <!-- 年級篩選 -->
-      <div class="mb-6">
-        <!-- 手機版：收合切換列 -->
-        <button id="filter-toggle" class="sm:hidden w-full flex items-center justify-between px-4 py-2.5 rounded-2xl bg-gradient-to-r from-purple-50 to-blue-50 border border-purple-200 text-sm font-medium text-purple-700 mb-2" onclick="toggleFilter()">
-          <span id="filter-toggle-label">篩選年級：🌟 全部</span>
-          <svg id="filter-toggle-icon" class="w-5 h-5 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
-        </button>
-        <!-- 按鈕區：手機預設隱藏，桌面永遠顯示 -->
-        <div id="filter-panel" class="hidden sm:flex flex-wrap justify-center gap-2 sm:gap-3">
-          <div class="flex flex-wrap justify-center gap-2 sm:gap-3 w-full" id="filter-controls">
-            <button class="filter-btn active px-4 sm:px-6 py-2 rounded-full bg-gray-100 hover:bg-gray-200" data-grade="all">🌟 全部</button>
-            <button class="filter-btn px-4 sm:px-6 py-2 rounded-full bg-gray-100 hover:bg-gray-200" data-grade="低">🌱 低年級</button>
-            <button class="filter-btn px-4 sm:px-6 py-2 rounded-full bg-gray-100 hover:bg-gray-200" data-grade="中">🌿 中年級</button>
-            <button class="filter-btn px-4 sm:px-6 py-2 rounded-full bg-gray-100 hover:bg-gray-200" data-grade="高">🌳 高年級</button>
-          </div>
-        </div>
+<div class="header">
+  <h1>臺灣本土兒少好書推薦</h1>
+  <p>由推薦書單精選臺灣本土創作兒少讀物</p>
+</div>
+
+<div class="container">
+  <div class="filter-bar">
+    <button class="filter-toggle" id="filterToggle" onclick="toggleFilterPanel()">
+      <span id="filterToggleLabel">篩選條件 ▾</span>
+      <span class="arrow" id="filterArrow">▼</span>
+    </button>
+    <div class="filter-collapsible collapsed" id="filterCollapsible">
+      <div class="age-tabs" id="ageTabs">
+        <button class="age-tab active" data-age="">全部</button>
+        <button class="age-tab" data-age="幼兒0-6歲">幼兒</button>
+        <button class="age-tab" data-age="國小低年級">低年級</button>
+        <button class="age-tab" data-age="國小中年級">中年級</button>
+        <button class="age-tab" data-age="國小高年級">高年級</button>
+        <button class="age-tab" data-age="國中">國中</button>
+        <button class="age-tab" data-age="高中">高中</button>
       </div>
+      <div class="source-filters" id="sourceFilters"></div>
+    </div>
+    <div class="search-row">
+      <input type="text" class="search-input" id="searchInput" placeholder="搜尋書名或作者...">
+      <button class="clear-btn" id="clearBtn">&times;</button>
+    </div>
+  </div>
 
-      <!-- 關鍵字搜尋 -->
-      <div class="max-w-2xl mx-auto mb-6">
-        <div class="relative">
-          <input id="search-input" class="w-full px-5 py-3 pl-12 rounded-2xl border-2 border-gray-200 focus:outline-none focus:border-purple-500 focus:ring-4 focus:ring-purple-100" placeholder="搜尋：書名 / 作者 / 出版社 / ISBN" />
-          <svg class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-5.2-5.2M15 10a5 5 0 11-10 0 5 5 0 0110 0z"/>
-          </svg>
-        </div>
-      </div>
+  <div class="info-bar" id="infoBar"></div>
+  <div class="book-grid" id="bookGrid"></div>
+  <div class="load-more-wrap" id="loadMoreWrap" style="display:none">
+    <button class="btn-load" id="loadMoreBtn">顯示更多</button>
+  </div>
+  <div class="loading" id="loading">載入書單中</div>
+  <div class="empty-state" id="emptyState" style="display:none">找不到符合條件的書籍</div>
+</div>
 
-      <div class="text-center mb-4">
-        <span id="result-count" class="inline-flex items-center px-3 py-1 rounded-full text-sm bg-gradient-to-r from-purple-100 to-blue-100 text-purple-800"></span>
-      </div>
+<footer class="footer">
+  <p><strong>資料來源：</strong><a href="https://book.moc.gov.tw/" target="_blank" rel="noopener noreferrer">中小學生讀物選介</a>、<a href="https://tpml.gov.taipei/News_Content.aspx?n=E5E37C9048A83EB3&sms=7D4B7120B494353E&s=C15B641097D9FEB8" target="_blank" rel="noopener noreferrer">好書大家讀</a>、<a href="https://www.pccr.tw/%E8%A9%95%E9%81%B8%E4%BD%9C%E6%A5%AD%E4%BB%8B%E7%B4%B9/" target="_blank" rel="noopener noreferrer">嬰幼兒閱讀</a>、<a href="https://read.tn.edu.tw/" target="_blank" rel="noopener noreferrer">布可星球</a>、<a href="https://ireading.kh.edu.tw/" target="_blank" rel="noopener noreferrer">喜閱網</a>、<a href="https://www.tnpl.tn.edu.tw/u5757330425670374244/a1" target="_blank" rel="noopener noreferrer">臺南市圖</a>、<a href="https://www.openbook.org.tw/annual" target="_blank" rel="noopener noreferrer">Openbook好書獎</a>、<a href="https://children.moc.gov.tw/" target="_blank" rel="noopener noreferrer">文化部兒童文化館</a> 等</p>
+  <div style="margin-top:.8rem">
+    <a class="footer-cta" href="https://portaly.cc/mamahowma/support" target="_blank" rel="noopener noreferrer">
+      喜歡這個免費工具嗎？<br>☕ 請杯咖啡鼓勵我
+    </a>
+  </div>
+  <div class="footer-icons">
+    <a href="mailto:mamahowma@gmail.com" aria-label="Email mamahowma"><i class="fa-solid fa-envelope" aria-hidden="true"></i></a>
+    <a href="https://www.facebook.com/mamahowma" target="_blank" rel="noopener noreferrer" aria-label="mamahowma Facebook Page"><i class="fa-brands fa-facebook" aria-hidden="true"></i></a>
+    <a href="https://portaly.cc/mamahowma/support" target="_blank" rel="noopener noreferrer" aria-label="Support mamahowma"><i class="fa-solid fa-mug-hot" aria-hidden="true"></i></a>
+  </div>
+  <p>&copy; 2026 Christina Yu. All Rights Reserved.</p>
+</footer>
 
-      <!-- 資料表 -->
-      <div id="table-wrap" class="overflow-x-auto rounded-2xl border border-gray-200 shadow-inner bg-gray-50/70 hidden">
-        <table class="w-full min-w-[900px] text-sm">
-          <thead class="bg-gradient-to-r from-purple-600 to-blue-600 text-white">
-            <tr>
-              <th class="px-4 py-3 text-left">書名</th>
-              <th class="px-4 py-3 text-left">作者/繪者</th>
-              <th class="px-4 py-3 text-left">出版社</th>
-              <th class="px-4 py-3 text-center">建議年級</th>
-              <th class="px-4 py-3 text-center">來源</th>
-              <th class="px-4 py-3 text-center">資訊</th>
-            </tr>
-          </thead>
-          <tbody id="tbody" class="divide-y divide-gray-200"></tbody>
-        </table>
-      </div>
+<button class="back-to-top" id="backToTop" onclick="window.scrollTo({top:0,behavior:'smooth'})" aria-label="回到頂部">↑</button>
 
-      <div id="no-results" class="hidden text-center py-12">
-        <p class="text-gray-600 text-lg">找不到結果，請調整篩選或關鍵字。</p>
-      </div>
-    </section>
+<script>
+// 手機版篩選收合
+let filterOpen = false;
+function toggleFilterPanel() {
+  filterOpen = !filterOpen;
+  document.getElementById('filterCollapsible').classList.toggle('collapsed', !filterOpen);
+  document.getElementById('filterArrow').classList.toggle('open', filterOpen);
+}
 
-    <footer class="text-center mt-6 text-gray-600 text-sm">
-      <p>© Christina Yu | 本頁面僅供教學與查詢使用</p>
-    </footer>
-  </main>
+// 回到頂部按鈕
+window.addEventListener('scroll', () => {
+  document.getElementById('backToTop').classList.toggle('show', window.scrollY > 300);
+});
 
-  <!-- 回到頂部按鈕 -->
-  <button id="back-to-top" onclick="window.scrollTo({top:0,behavior:'smooth'})"
-    class="fixed bottom-6 right-6 w-12 h-12 rounded-full bg-gradient-to-r from-purple-600 to-blue-600 text-white shadow-lg flex items-center justify-center opacity-0 pointer-events-none transition-all duration-300 hover:scale-110 z-50"
-    aria-label="回到頂部">
-    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"/></svg>
-  </button>
+const PAGE_SIZE = 60;
+const AFFILIATE = 'mamahowread';
 
-  <script>
-    const tbody = document.getElementById("tbody");
-    const resultCount = document.getElementById("result-count");
-    const tableWrap = document.getElementById("table-wrap");
-    const noResults = document.getElementById("no-results");
-    const searchInput = document.getElementById("search-input");
-    const filterControls = document.getElementById("filter-controls");
-    const filterPanel = document.getElementById("filter-panel");
-    const filterToggle = document.getElementById("filter-toggle");
-    const filterToggleLabel = document.getElementById("filter-toggle-label");
-    const filterToggleIcon = document.getElementById("filter-toggle-icon");
-    const backToTop = document.getElementById("back-to-top");
+let allBooks = [];
+let filtered = [];
+let page = 0;
+let activeAge = '';
+let activeSource = '';
+let searchTerm = '';
+let allSources = [];
 
-    const gradeLabels = { all:"🌟 全部", "低":"🌱 低年級", "中":"🌿 中年級", "高":"🌳 高年級" };
-    let filterOpen = false;
+const grid = document.getElementById('bookGrid');
+const infoBar = document.getElementById('infoBar');
+const loadMoreWrap = document.getElementById('loadMoreWrap');
+const loadMoreBtn = document.getElementById('loadMoreBtn');
+const loading = document.getElementById('loading');
+const emptyState = document.getElementById('emptyState');
+const searchInput = document.getElementById('searchInput');
+const clearBtn = document.getElementById('clearBtn');
 
-    function toggleFilter(){
-      filterOpen = !filterOpen;
-      filterPanel.classList.toggle("hidden", !filterOpen);
-      filterPanel.classList.toggle("flex", filterOpen);
-      filterToggleIcon.style.transform = filterOpen ? "rotate(180deg)" : "";
+// Buy URL
+function buyUrl(book) {
+  const key = book.isbn || book.title;
+  const now = new Date();
+  const ym = String(now.getFullYear()) + String(now.getMonth() + 1).padStart(2, '0');
+  return `https://search.books.com.tw/search/query/key/${encodeURIComponent(key)}/cat/all?utm_source=${AFFILIATE}&utm_medium=ap-books&utm_content=recommend&utm_campaign=ap-${ym}`;
+}
+
+// Borrow URL (NBINet 全國圖書書目資訊網，含公共圖書館)
+function borrowUrl(book) {
+  if (book.isbn) {
+    return `https://nbinet3.ncl.edu.tw/search*cht/?searchtype=i&searcharg=${encodeURIComponent(book.isbn)}`;
+  }
+  return `https://nbinet3.ncl.edu.tw/search*cht/?searchtype=t&searcharg=${encodeURIComponent(book.title)}`;
+}
+
+// Render one card
+function renderCard(book) {
+  const card = document.createElement('div');
+  card.className = 'book-card';
+
+  const meta = [book.author, book.publisher].filter(Boolean).join(' / ');
+  const srcTags = (book.sources || []).map(s =>
+    `<span class="tag tag-source">${s}</span>`
+  ).join('');
+
+  card.innerHTML = `
+    <div class="book-title">${esc(book.title)}</div>
+    <div class="book-meta"><span>${esc(meta)}</span>${book.year ? `<span>${book.year}</span>` : ''}</div>
+    <div class="book-tags">
+      ${book.age_group ? `<span class="tag tag-age">${book.age_group}</span>` : ''}
+      ${srcTags}
+    </div>
+    <div class="book-actions">
+      <a class="btn btn-buy" href="${buyUrl(book)}" target="_blank" rel="noopener">購買</a>
+      <a class="btn btn-borrow" href="${borrowUrl(book)}" target="_blank" rel="noopener">借閱</a>
+    </div>
+  `;
+  return card;
+}
+
+function esc(s) {
+  if (!s) return '';
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+// Apply filters
+function applyFilters() {
+  const q = searchTerm.toLowerCase();
+  // First filter by age + search (without source) for source counts
+  const baseFiltered = allBooks.filter(b => {
+    if (activeAge && b.age_group !== activeAge) return false;
+    if (q) {
+      const hay = (b.title + ' ' + (b.author || '') + ' ' + (b.publisher || '')).toLowerCase();
+      if (!hay.includes(q)) return false;
     }
+    return true;
+  });
+  updateSourceCounts(baseFiltered);
+  // Then apply source filter
+  filtered = activeSource ? baseFiltered.filter(b => (b.sources || []).includes(activeSource)) : baseFiltered;
+  page = 0;
+  render();
+}
 
-    // 回到頂部按鈕：滾超過 300px 才顯示
-    window.addEventListener("scroll", ()=>{
-      const show = window.scrollY > 300;
-      backToTop.style.opacity = show ? "1" : "0";
-      backToTop.style.pointerEvents = show ? "auto" : "none";
-    });
+// Render
+function render() {
+  grid.innerHTML = '';
+  const end = Math.min((page + 1) * PAGE_SIZE, filtered.length);
+  for (let i = 0; i < end; i++) {
+    grid.appendChild(renderCard(filtered[i]));
+  }
+  infoBar.textContent = `共 ${filtered.length} 本書`;
+  loadMoreWrap.style.display = end < filtered.length ? '' : 'none';
+  emptyState.style.display = filtered.length === 0 ? '' : 'none';
+}
 
-    let ALL = [];
-    let gradeFilter = "all";
-    let q = "";
+// Load more
+loadMoreBtn.addEventListener('click', () => {
+  page++;
+  const start = page * PAGE_SIZE;
+  const end = Math.min(start + PAGE_SIZE, filtered.length);
+  for (let i = start; i < end; i++) {
+    grid.appendChild(renderCard(filtered[i]));
+  }
+  loadMoreWrap.style.display = end < filtered.length ? '' : 'none';
+});
 
-    function badge(source){
-      const cls = source === "喜閱網" ? "bg-blue-100 text-blue-700 border border-blue-200" : "bg-green-100 text-green-700 border border-green-200";
-      return `<span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs ${cls}">${source}</span>`;
-    }
+// Age tabs
+document.getElementById('ageTabs').addEventListener('click', e => {
+  const tab = e.target.closest('.age-tab');
+  if (!tab) return;
+  document.querySelectorAll('.age-tab').forEach(t => t.classList.remove('active'));
+  tab.classList.add('active');
+  activeAge = tab.dataset.age;
+  // 更新手機版 toggle 文字，選完自動收起
+  const label = tab.textContent.trim();
+  document.getElementById('filterToggleLabel').textContent = activeAge ? `篩選：${label}` : '篩選條件 ▾';
+  if (filterOpen && window.innerWidth <= 600) { toggleFilterPanel(); }
+  applyFilters();
+});
 
-    function safe(v){ return (v ?? "").toString(); }
-
-    function render(){
-      let arr = ALL.filter(b => gradeFilter === "all" ? true : (safe(b.grade_category) === gradeFilter));
-      const term = q.trim().toLowerCase();
-      if(term){
-        arr = arr.filter(b => [b.title, b.author, b.publisher, b.isbn].map(x => safe(x).toLowerCase()).some(s => s.includes(term)));
-      }
-
-      tbody.innerHTML = "";
-      resultCount.textContent = `📚 共 ${arr.length} 本`;
-
-      if(arr.length === 0){
-        tableWrap.classList.add("hidden");
-        noResults.classList.remove("hidden");
-        return;
+// Source filters - build once
+function buildSourceFilters() {
+  const counts = {};
+  allBooks.forEach(b => (b.sources || []).forEach(s => counts[s] = (counts[s] || 0) + 1));
+  allSources = Object.entries(counts).sort((a, b) => b[1] - a[1]);
+  const wrap = document.getElementById('sourceFilters');
+  wrap.innerHTML = '';
+  allSources.forEach(([name]) => {
+    const chip = document.createElement('button');
+    chip.className = 'source-chip';
+    chip.dataset.source = name;
+    chip.addEventListener('click', () => {
+      if (activeSource === name) {
+        activeSource = '';
+        chip.classList.remove('active');
       } else {
-        tableWrap.classList.remove("hidden");
-        noResults.classList.add("hidden");
+        document.querySelectorAll('.source-chip').forEach(c => c.classList.remove('active'));
+        activeSource = name;
+        chip.classList.add('active');
       }
-
-      arr.forEach((b,i)=>{
-        const gradeDisp = b.grade_specific && b.grade_specific.trim()
-          ? b.grade_specific
-          : (safe(b.grade_category) ? `<span class="text-gray-400 italic">（${safe(b.grade_category)}年級）</span>` : "");
-
-        const hasTranslator = b.translator && b.translator.trim();
-
-        const details = `
-          <details class="group">
-            <summary class="cursor-pointer select-none flex items-center justify-center gap-1 text-indigo-700 hover:underline">
-              <span>更多</span>
-              <svg class="w-4 h-4 transition-transform group-open:rotate-180" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.116l3.71-3.885a.75.75 0 111.08 1.04l-4.24 4.44a.75.75 0 01-1.08 0L5.21 8.27a.75.75 0 01.02-1.06z" clip-rule="evenodd"/></svg>
-            </summary>
-            <div class="mt-2 text-xs text-gray-600 px-2 pb-2">
-              <div><span class="text-gray-500">出版日期：</span>${safe(b.publication_date) || "—"}</div>
-              <div><span class="text-gray-500">ISBN：</span>${safe(b.isbn) || "—"}</div>
-              ${hasTranslator ? `<div><span class="text-gray-500">譯者：</span>${safe(b.translator)}</div>` : ""}
-            </div>
-          </details>
-        `;
-
-        const tr = document.createElement("tr");
-        tr.className = "bg-white hover:bg-gradient-to-r hover:from-purple-50 hover:to-blue-50 transition-all fade-in";
-        tr.style.animationDelay = (i*0.01)+"s";
-        tr.innerHTML = `
-          <td class="px-4 py-3 font-medium">${safe(b.title)}</td>
-          <td class="px-4 py-3 whitespace-pre-wrap text-gray-700">${safe(b.author)}</td>
-          <td class="px-4 py-3">${safe(b.publisher)}</td>
-          <td class="px-4 py-3 text-center">${gradeDisp || " "}</td>
-          <td class="px-4 py-3 text-center">${badge(safe(b.source))}</td>
-          <td class="px-4 py-3 text-center">${details}</td>
-        `;
-        tbody.appendChild(tr);
-      });
-    }
-
-    filterControls.addEventListener("click", (e)=>{
-      if(e.target.matches("button.filter-btn")){
-        filterControls.querySelectorAll("button.filter-btn").forEach(b=>b.classList.remove("active"));
-        e.target.classList.add("active");
-        gradeFilter = e.target.dataset.grade;
-        // 更新手機版切換列文字，並自動收起
-        filterToggleLabel.textContent = "篩選年級：" + (gradeLabels[gradeFilter] || gradeFilter);
-        if(filterOpen && window.innerWidth < 640){ toggleFilter(); }
-        render();
-      }
+      applyFilters();
     });
+    wrap.appendChild(chip);
+  });
+}
 
-    searchInput.addEventListener("input", (e)=>{
-      q = e.target.value;
-      render();
-    });
+// Update source chip counts based on filtered data
+function updateSourceCounts(baseFiltered) {
+  const counts = {};
+  baseFiltered.forEach(b => (b.sources || []).forEach(s => counts[s] = (counts[s] || 0) + 1));
+  document.querySelectorAll('.source-chip').forEach(chip => {
+    const name = chip.dataset.source;
+    const count = counts[name] || 0;
+    chip.textContent = `${name} (${count})`;
+    chip.style.display = count > 0 ? '' : 'none';
+  });
+}
 
-    (async function(){
-      try{
-        const res = await fetch("books.json", {cache: "no-store"});
-        const data = await res.json();
-        ALL = data.books || [];
-      }catch(err){
-        console.error("載入 books.json 失敗：", err);
-        ALL = [];
-      }
-      render();
-      tableWrap.classList.toggle("hidden", ALL.length===0);
-      noResults.classList.toggle("hidden", ALL.length!==0);
-    })();
-  </script>
+// Search
+let debounceTimer;
+searchInput.addEventListener('input', () => {
+  clearBtn.classList.toggle('show', searchInput.value.length > 0);
+  clearTimeout(debounceTimer);
+  debounceTimer = setTimeout(() => {
+    searchTerm = searchInput.value.trim();
+    applyFilters();
+  }, 250);
+});
+clearBtn.addEventListener('click', () => {
+  searchInput.value = '';
+  searchTerm = '';
+  clearBtn.classList.remove('show');
+  applyFilters();
+});
+
+// Init
+fetch('books.json')
+  .then(r => r.json())
+  .then(data => {
+    allBooks = data;
+    loading.style.display = 'none';
+    buildSourceFilters();
+    applyFilters();
+  })
+  .catch(err => {
+    loading.textContent = '載入失敗，請確認 books.json 存在';
+    console.error(err);
+  });
+</script>
 </body>
 </html>
