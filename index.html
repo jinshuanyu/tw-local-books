@@ -319,6 +319,7 @@ let activeAge = '';
 let activeSource = '';
 let searchTerm = '';
 let allSources = [];
+let buyLinks = {};
 
 const grid = document.getElementById('bookGrid');
 const infoBar = document.getElementById('infoBar');
@@ -331,10 +332,15 @@ const clearBtn = document.getElementById('clearBtn');
 
 // Buy URL
 function buyUrl(book) {
-  const key = book.isbn || book.title;
   const now = new Date();
   const ym = String(now.getFullYear()) + String(now.getMonth() + 1).padStart(2, '0');
-  return `https://search.books.com.tw/search/query/key/${encodeURIComponent(key)}/cat/all?utm_source=${AFFILIATE}&utm_medium=ap-books&utm_content=recommend&utm_campaign=ap-${ym}`;
+  const utm = `utm_source=${AFFILIATE}&utm_medium=ap-books&utm_content=recommend&utm_campaign=ap-${ym}`;
+  const productId = book.isbn && buyLinks[book.isbn];
+  if (productId) {
+    return `https://www.books.com.tw/exep/assp.php/${AFFILIATE}/products/${productId}?sloc=main&${utm}`;
+  }
+  const key = book.isbn || book.title;
+  return `https://search.books.com.tw/search/query/key/${encodeURIComponent(key)}/cat/all?${utm}`;
 }
 
 // Borrow URL (NBINet 全國圖書書目資訊網，含公共圖書館)
@@ -487,10 +493,13 @@ clearBtn.addEventListener('click', () => {
 });
 
 // Init
-fetch('books.json')
-  .then(r => r.json())
-  .then(data => {
-    allBooks = data;
+Promise.all([
+  fetch('books.json').then(r => r.json()),
+  fetch('buy_links.json').then(r => r.json()).catch(() => ({}))
+])
+  .then(([books, links]) => {
+    allBooks = books;
+    buyLinks = links;
     loading.style.display = 'none';
     buildSourceFilters();
     applyFilters();
