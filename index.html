@@ -344,11 +344,13 @@ function buyUrl(book) {
 }
 
 // Borrow URL (NBINet 全國圖書書目資訊網，含公共圖書館)
+// 2026 NBINet 改版為 Primo 新系統，舊的 nbinet3 已停用
 function borrowUrl(book) {
+  const base = 'https://nbinet.primo.exlibrisgroup.com/nde/search?tab=LibraryCatalog&search_scope=MyInstitution&lang=zh-tw&vid=886NCL_NBINET:NBINET';
   if (book.isbn) {
-    return `https://nbinet3.ncl.edu.tw/search*cht/?searchtype=i&searcharg=${encodeURIComponent(book.isbn)}`;
+    return `${base}&query=${encodeURIComponent(book.isbn)}`;
   }
-  return `https://nbinet3.ncl.edu.tw/search*cht/?searchtype=t&searcharg=${encodeURIComponent(book.title)}`;
+  return `${base}&query=${encodeURIComponent(book.title)}`;
 }
 
 // Render one card
